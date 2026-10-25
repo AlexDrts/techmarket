@@ -12,7 +12,7 @@
 
 </div>
 
-<!-- Add a screenshot here: drag an image into this file while editing on GitHub -->
+<img width="100%" alt="photo_2026-10-25_13-12-39" src="https://github.com/user-attachments/assets/429aa8b5-bde6-4526-aef6-51940f66d845" />
 
 ## ✨ Features
 
