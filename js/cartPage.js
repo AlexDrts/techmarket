@@ -1,166 +1,146 @@
-let cart =
-  JSON.parse(localStorage.getItem("cart")) || [];
+import Cart, { MAX_QUANTITY } from './Cart.js';
+import Customer from './Customer.js';
+import Order, { ORDER_STEPS } from './Order.js';
+import { formatPrice } from './Product.js';
+import { updateCartBadge, showToast, el } from './ui.js';
 
-const cartItems =
-  document.getElementById("cartItems");
+const cart = Cart.load();
 
-const total =
-  document.getElementById("total");
+const itemsBox = document.getElementById('cartItems');
+const summary = document.getElementById('summary');
+const totalBox = document.getElementById('total');
+const countBox = document.getElementById('itemCount');
+const checkout = document.getElementById('checkout');
+const form = document.getElementById('orderForm');
+const submitBtn = document.getElementById('submitBtn');
+const progress = document.getElementById('orderProgress');
 
-let sum = 0;
-
-cart.forEach((item, index) => {
-
-  const div = document.createElement("div");
-
-  div.innerHTML = `
-  <h3>${item.name}</h3>
-  <p>${item.price}</p>
-  <button class="delete-btn">Видалити</button>
-`;
-
-  const deleteBtn = div.querySelector(".delete-btn");
-
-  deleteBtn.addEventListener("click", () => {
-
-    cart.splice(index, 1);
-
-    localStorage.setItem(
-      "cart",
-      JSON.stringify(cart)
-    );
-
-    location.reload();
-  });
-
-  cartItems.append(div);
-
-  const price = Number(
-    item.price.replace(/\s/g, "").replace("грн", "")
-  );
-
-  sum += price;
-});
-
-total.textContent = `Разом: ${sum.toLocaleString()} грн`;
-
-function createOrder(orderId) {
-  return new Promise((resolve, reject) => {
-
-    setTimeout(() => {
-
-      if (Math.random() < 0.1) {
-        reject("Замовлення загубив менеджер");
-        return;
-      }
-
-      resolve(`Замовлення створено: ${orderId}`);
-
-    }, 1000);
-
-  });
-}
-
-function processOrder(orderId) {
-  return new Promise((resolve, reject) => {
-
-    setTimeout(() => {
-
-      if (Math.random() < 0.1) {
-        reject("Помилка під час обробки замовлення");
-        return;
-      }
-
-      resolve(`Замовлення оброблено: ${orderId}`);
-
-    }, 2000);
-
-  });
-}
-
-function deliverOrder(orderId) {
-  return new Promise((resolve, reject) => {
-
-    setTimeout(() => {
-
-      if (Math.random() < 0.1) {
-        reject("Замовлення загубила служба доставки");
-        return;
-      }
-
-      resolve(`Замовлення доставлено: ${orderId}`);
-
-    }, 3000);
-
-  });
-}
-
-const form = document.getElementById("orderForm");
-
-form.addEventListener("submit", function(event) {
-
-  event.preventDefault();
-
-  const name =
-    document.getElementById("name").value.trim();
-
-  const phone =
-    document.getElementById("phone").value.trim();
-
-  const email =
-    document.getElementById("email").value.trim();
-
-  if (name.length < 2) {
-    alert("Введіть коректне ім'я");
+function renderCart() {
+  updateCartBadge(cart);
+  if (cart.isEmpty) {
+    const empty = el('div', 'empty-cart');
+    empty.append(el('p', null, 'Your cart is empty.'));
+    const link = el('a', 'btn btn-primary', 'Browse products');
+    link.href = 'index.html';
+    empty.append(link);
+    itemsBox.replaceChildren(empty);
+    summary.hidden = true;
+    checkout.hidden = true;
     return;
   }
 
-  if (phone.length < 10) {
-    alert("Введіть коректний телефон");
-    return;
-  }
+  itemsBox.replaceChildren(...cart.items.map(item => {
+    const row = el('article', 'cart-item');
 
-  if (!email.includes("@")) {
-    alert("Введіть коректний email");
-    return;
-  }
+    const img = el('img');
+    img.src = item.image;
+    img.alt = '';
 
-  const orderData = {
-    name,
-    phone,
-    email,
-    city: document.getElementById("city").value,
-    delivery:
-    document.querySelector(
-      'input[name="delivery"]:checked'
-    ).value,
-    gift:
-    document.getElementById("gift").checked,
-    insurance:
-    document.getElementById("insurance").checked
-  };
+    const info = el('div', 'cart-item-info');
+    info.append(el('h3', null, item.title), el('p', 'unit-price', `${formatPrice(item.price)} each`));
 
-  console.log("Замовлення:");
-  console.log(orderData);
+    const stepper = el('div', 'stepper');
+    const minus = el('button', 'step', '−');
+    const qty = el('span', 'qty', String(item.quantity));
+    const plus = el('button', 'step', '+');
+    minus.type = plus.type = 'button';
+    minus.setAttribute('aria-label', `Decrease quantity of ${item.title}`);
+    plus.setAttribute('aria-label', `Increase quantity of ${item.title}`);
+    plus.disabled = item.quantity >= MAX_QUANTITY;
+    qty.setAttribute('aria-live', 'polite');
+    minus.addEventListener('click', () => { cart.setQuantity(item.id, item.quantity - 1); renderCart(); });
+    plus.addEventListener('click', () => { cart.setQuantity(item.id, item.quantity + 1); renderCart(); });
+    stepper.append(minus, qty, plus);
 
-  const orderId = Date.now();
+    const lineTotal = el('p', 'line-total', formatPrice(item.price * item.quantity));
 
-  createOrder(orderId)
-    .then(result => {
-      console.log(result);
-      return processOrder(orderId);
-    })
-    .then(result => {
-      console.log(result);
-      return deliverOrder(orderId);
-    })
-    .then(result => {
-      console.log(result);
-      alert("Замовлення успішно доставлено!");
-    })
-    .catch(error => {
-      console.error(error);
-      alert(error);
+    const remove = el('button', 'remove', 'Remove');
+    remove.type = 'button';
+    remove.setAttribute('aria-label', `Remove ${item.title} from cart`);
+    remove.addEventListener('click', () => {
+      cart.remove(item.id);
+      renderCart();
+      showToast('Item removed from cart');
     });
 
+    row.append(img, info, stepper, lineTotal, remove);
+    return row;
+  }));
+
+  countBox.textContent = `${cart.count} ${cart.count === 1 ? 'item' : 'items'}`;
+  totalBox.textContent = formatPrice(cart.getTotal());
+  summary.hidden = false;
+  checkout.hidden = false;
+}
+
+// ---- checkout ----
+function showErrors(errors) {
+  for (const field of ['name', 'phone', 'email']) {
+    const input = document.getElementById(field);
+    const message = document.getElementById(`${field}Error`);
+    input.setAttribute('aria-invalid', String(Boolean(errors[field])));
+    message.textContent = errors[field] ?? '';
+  }
+  const first = Object.keys(errors)[0];
+  if (first) document.getElementById(first).focus();
+}
+
+function renderSteps() {
+  progress.replaceChildren(...ORDER_STEPS.map(step => {
+    const li = el('li', 'step-item', step.label);
+    li.dataset.state = 'pending';
+    return li;
+  }));
+}
+
+function setStep(index, state) {
+  progress.children[index].dataset.state = state;
+}
+
+function showResult(text, ok) {
+  const result = el('li', ok ? 'result ok' : 'result fail', text);
+  progress.append(result);
+}
+
+form.addEventListener('submit', async event => {
+  event.preventDefault();
+  const customer = new Customer({
+    name: form.elements.name.value,
+    phone: form.elements.phone.value,
+    email: form.elements.email.value,
+  });
+  const errors = customer.validate();
+  showErrors(errors);
+  if (Object.keys(errors).length) return;
+
+  const order = new Order({
+    customer,
+    items: cart.items,
+    city: form.elements.city.value,
+    delivery: form.elements.delivery.value,
+    gift: form.elements.gift.checked,
+    insurance: form.elements.insurance.checked,
+  });
+  console.log(order.showOrder(), order);
+
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Placing order…';
+  renderSteps();
+  progress.hidden = false;
+
+  try {
+    await order.place(setStep);
+    showResult(`${order.showOrder()} has been delivered to ${order.city}. Thank you, ${customer.name}!`, true);
+    cart.clear();
+    updateCartBadge(cart);
+    itemsBox.replaceChildren();
+    summary.hidden = true;
+    form.hidden = true;
+  } catch (error) {
+    showResult(`${error.message} Your cart is saved, please try again.`, false);
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Try again';
+  }
 });
+
+renderCart();

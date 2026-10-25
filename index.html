@@ -1,36 +1,51 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>TechMarket</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechMarket · Online Store</title>
+  <meta name="description" content="TechMarket: an online store demo built with vanilla JavaScript and ES modules">
+  <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<header>
-  <div class="logo">TechMarket</div>
-
+<header class="site-header">
+  <a href="index.html" class="logo">TechMarket</a>
   <div class="search">
-    <label>
-      <input type="text" placeholder="Пошук товарів...">
-    </label>
+    <label for="search" class="visually-hidden">Search products</label>
+    <input type="search" id="search" placeholder="Search products..." autocomplete="off">
   </div>
-
-  <a href="cart.html" class="cart">Кошик</a>
+  <a href="cart.html" class="cart-link">
+    Cart <span class="badge" id="cartCount" hidden>0</span>
+  </a>
 </header>
 
-<nav class="categories">
-  <div>Електроніка</div>
-  <div>Смартфони</div>
-  <div>Ноутбуки</div>
-  <div>ТВ</div>
-  <div>Аксесуари</div>
-</nav>
+<nav class="categories" id="categories" aria-label="Categories"></nav>
 
-<main class="container">
-
+<main>
+  <div class="toolbar">
+    <p id="resultCount" aria-live="polite">Loading products…</p>
+    <label class="sort">
+      Sort by
+      <select id="sort">
+        <option value="featured">Featured</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="rating">Top rated</option>
+      </select>
+    </label>
+  </div>
+  <p class="notice" id="notice" hidden></p>
+  <div class="container" id="products">
+    <div class="card skeleton"></div><div class="card skeleton"></div><div class="card skeleton"></div>
+  </div>
 </main>
+
+<footer class="site-footer">
+  Demo store · product data from <a href="https://fakestoreapi.com" target="_blank" rel="noopener">Fake Store API</a>
+</footer>
+
 <script type="module" src="js/app.js"></script>
 </body>
 </html>

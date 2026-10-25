@@ -1,87 +1,83 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Кошик</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cart · TechMarket</title>
+  <link rel="icon" href="favicon.ico">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<header>
-  <a href="index.html" class="back-btn">
-    ← Повернутися до магазину
+<header class="site-header">
+  <a href="index.html" class="logo">TechMarket</a>
+  <a href="index.html" class="back-link">← Back to store</a>
+  <a href="cart.html" class="cart-link" aria-current="page">
+    Cart <span class="badge" id="cartCount" hidden>0</span>
   </a>
-  <h1>Кошик</h1>
 </header>
 
-<div id="cartItems"></div>
+<main class="cart-page">
+  <h1>Shopping cart</h1>
 
-<h2 id="total"></h2>
+  <div id="cartItems" class="cart-items"></div>
 
-<h2>Оформлення замовлення</h2>
-
-<form id="orderForm" class="order-form">
-
-  <label>
-    Ім'я:
-    <input type="text" id="name" required>
-  </label>
-
-  <label>
-    Телефон:
-    <input type="tel" id="phone" required>
-  </label>
-
-  <label>
-    Email:
-    <input type="email" id="email" required>
-  </label>
-
-  <label>
-    Місто:
-    <select id="city">
-      <option>Одеса</option>
-      <option>Київ</option>
-      <option>Львів</option>
-      <option>Харків</option>
-    </select>
-  </label>
-
-  <div class="form-group">
-    <p>Спосіб доставки:</p>
-
-    <label>
-      <input type="radio" name="delivery" value="Нова Пошта" checked>
-      Нова Пошта
-    </label>
-
-    <label>
-      <input type="radio" name="delivery" value="Укрпошта">
-      Укрпошта
-    </label>
+  <div class="summary" id="summary" hidden>
+    <span id="itemCount"></span>
+    <span>Total: <strong id="total"></strong></span>
   </div>
 
-  <div class="form-group">
-    <p>Додаткові послуги:</p>
+  <section class="checkout" id="checkout" hidden aria-labelledby="checkoutTitle">
+    <h2 id="checkoutTitle">Checkout</h2>
 
-    <label>
-      <input type="checkbox" id="gift">
-      Подарункове пакування
-    </label>
+    <form id="orderForm" class="order-form" novalidate>
+      <div class="field">
+        <label for="name">Full name</label>
+        <input type="text" id="name" name="name" autocomplete="name" aria-describedby="nameError">
+        <p class="error" id="nameError"></p>
+      </div>
 
-    <label>
-      <input type="checkbox" id="insurance">
-      Страхування товару
-    </label>
-  </div>
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" placeholder="+380 50 123 4567" aria-describedby="phoneError">
+        <p class="error" id="phoneError"></p>
+      </div>
 
-  <button type="submit">
-    Оформити замовлення
-  </button>
+      <div class="field">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" autocomplete="email" aria-describedby="emailError">
+        <p class="error" id="emailError"></p>
+      </div>
 
-</form>
+      <div class="field">
+        <label for="city">City</label>
+        <select id="city" name="city">
+          <option>Odesa</option>
+          <option>Kyiv</option>
+          <option>Lviv</option>
+          <option>Kharkiv</option>
+        </select>
+      </div>
+
+      <fieldset class="form-group">
+        <legend>Delivery</legend>
+        <label><input type="radio" name="delivery" value="Nova Poshta" checked> Nova Poshta</label>
+        <label><input type="radio" name="delivery" value="Ukrposhta"> Ukrposhta</label>
+      </fieldset>
+
+      <fieldset class="form-group">
+        <legend>Extras</legend>
+        <label><input type="checkbox" id="gift" name="gift"> Gift wrapping</label>
+        <label><input type="checkbox" id="insurance" name="insurance"> Shipping insurance</label>
+      </fieldset>
+
+      <button type="submit" class="btn btn-primary btn-wide" id="submitBtn">Place order</button>
+    </form>
+
+    <ol class="order-progress" id="orderProgress" hidden aria-live="polite"></ol>
+  </section>
+</main>
 
 <script type="module" src="js/cartPage.js"></script>
-
 </body>
 </html>
