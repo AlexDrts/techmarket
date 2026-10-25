@@ -69,6 +69,6 @@ npx serve .
 
 <div align="center">
 
-Made by [Alex](https://github.com/AlexDrts) 🌸
+Made by [Alex](https://github.com/AlexDrts) 😈
 
 </div>
