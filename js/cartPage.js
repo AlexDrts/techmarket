@@ -3,6 +3,7 @@ import Customer from './Customer.js';
 import Order, { ORDER_STEPS } from './Order.js';
 import { formatPrice } from './Product.js';
 import { updateCartBadge, showToast, el } from './ui.js';
+import { saveOrder } from './firebase.js';
 
 const cart = Cart.load();
 
@@ -130,6 +131,7 @@ form.addEventListener('submit', async event => {
 
   try {
     await order.place(setStep);
+    await saveOrder(order);
     showResult(`${order.showOrder()} has been delivered to ${order.city}. Thank you, ${customer.name}!`, true);
     cart.clear();
     updateCartBadge(cart);
